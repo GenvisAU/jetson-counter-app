@@ -13,6 +13,7 @@
    - use USB cable to link Jetson and the computer
    - make sure the Jetson is powered
 6. Continue clicking *Next* until *Installation Complete*
+7. During Installation, if the warinings about time occurs, please use ssh to change the time on Jetson. Use the command `sudo date --set="2018-09-16 00:00:00"`
 
 
 
