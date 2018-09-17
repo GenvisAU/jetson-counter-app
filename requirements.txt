@@ -1,3 +1,4 @@
 tensorflow-gpu==1.10.1
 opencv-python
 numpy
+ww
