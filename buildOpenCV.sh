@@ -1,7 +1,5 @@
 #!/bin/bash
-# License: MIT. See license file in root directory
-# Copyright(c) AlexanderRobles21 (2018)
-cd $HOME
+
 sudo apt-get install -y \
     libglew-dev \
     libtiff5-dev \
@@ -34,7 +32,6 @@ git clone https://github.com/opencv/opencv.git
 cd opencv
 git checkout -b v3.4.0 3.4.0
 
-cd $HOME/opencv
 mkdir build
 cd build
 # Jetson TX2 
@@ -71,5 +68,4 @@ cmake \
     -DOPENCV_TEST_DATA_PATH=../opencv_extra/testdata \
     ../
 
-# Consider using all 6 cores; $ sudo nvpmodel -m 2 or $ sudo nvpmodel -m 0
 make -j4

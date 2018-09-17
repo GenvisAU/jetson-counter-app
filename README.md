@@ -20,5 +20,16 @@
 #### Install Tensorflow on Jetson
 
 1. Download [Nvidia official prebuilt wheel file](https://nvidia.app.box.com/v/TF1101-Py35-wTRT) of Tensorflow
-2. 
+2. Install pip3 through `sudo apt-get install python3-pip`
+3. Install Tensorflow through `pip3 install tensorflow-1.10.1-cp35-cp35m-linux_aarch64.whl`
+
+#### Build OpenCV on Jetson
+
+1. Run the build file `buildOpenCV.sh`
+2. After the first step, you can install the new build through `sudo make install`
+
+#### OpenCV Tests
+
+- Run `python3 OpenCV_test/webcam_test.py ` to test using web camera on Jetson
+- Run `python3 OpenCV_test/Jetsoncam_test.py` to test using Jetson onboard camera
 
