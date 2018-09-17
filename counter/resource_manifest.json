@@ -1,0 +1,3 @@
+{
+  "ssd_model": "https://s3-ap-southeast-1.amazonaws.com/gv-models/detector_model.pb"
+}
