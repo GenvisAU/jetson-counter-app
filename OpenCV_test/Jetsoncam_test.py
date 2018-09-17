@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 import cv2
 
 cap = cv2.VideoCapture("nvcamerasrc ! video/x-raw(memory:NVMM), width=(int)300, height=(int)300,format=(string)I420, framerate=(fraction)30/1 ! nvvidconv flip-method=0 ! video/x-raw, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink")
