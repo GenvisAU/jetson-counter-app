@@ -63,14 +63,14 @@ class Counter:
                 self.max_number_person = max(len(regions), self.max_number_person)
 
                 if wait_count >= frame_rate * max_wait_seconds and re_session_flag is False:
-                    # self.write_output(start=False, max_value=self.max_number_person, duration=int(time.time() - start_time))
+                    self.write_output(start=False, max_value=self.max_number_person, duration=int(time.time() - start_time))
                     self.write_to_json(file_id, start=False, max_value=self.max_number_person,
                                        duration=int(time.time() - start_time), data=output_data)
                     re_session_flag = True
                     wait_count = 0
 
         if re_session_flag is False:
-            # self.write_output(start=False, max_value=self.max_number_person, duration=int(time.time() - start_time))
+            self.write_output(start=False, max_value=self.max_number_person, duration=int(time.time() - start_time))
             self.write_to_json(file_id, start=False, max_value=self.max_number_person,
                                duration=int(time.time() - start_time), data=output_data)
 
