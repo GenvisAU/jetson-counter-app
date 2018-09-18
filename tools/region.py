@@ -1,5 +1,4 @@
 import math
-from ww import f
 
 
 class Region:
@@ -26,7 +25,8 @@ class Region:
         self.set_rect(left, right, top, bottom)
 
     def __repr__(self):
-        return f("[Region x: {self.x} y: {self.y} width: {self.width} height: {self.height}]")
+        return ("[Region x: {} y: {} width: {} height: {}]"
+                .format(self.x, self.y, self.width, self.height))
 
     # ===============================================================================================================================
     # Functions to set the attributes explicitly.

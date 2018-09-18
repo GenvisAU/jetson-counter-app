@@ -4,7 +4,6 @@ from enum import Enum
 from typing import List, Tuple
 from tools import core
 from tools.simple_filter import SimpleFilter
-from ww import f
 from abc import abstractmethod
 import numpy as np
 from tools import visual
@@ -99,12 +98,17 @@ class Tracklet:
     def __repr__(self):
 
         if self.frame_count == 0:
-            return f("Tracklet [ID: {self.id} Empty!]")
+            return "Tracklet [ID: {} Empty!]".format(self.id)
 
-        desc = f("Tracklet ["
-                 "ID: {self.id} "
-                 "Frames: {self.first_frame.frame_index}-{self.last_frame.frame_index} "
-                 "Size: {self.frame_count}]")
+        desc = "Tracklet [" \
+               "ID: {} " \
+               "Frames: {}-{} " \
+               "Size: {}]".format(
+                    self.id,
+                    self.first_frame.frame_index,
+                    self.last_frame.frame_index,
+                    self.frame_count)
+
         return desc
 
     def __init__(self, hit_limit: int = 3, miss_limit: int = 7,
@@ -321,7 +325,7 @@ class Tracker:
 
     @staticmethod
     def _convert_to_track_frames(regions: List[TrackingRegion], frame_index: int = 0,
-                                 ratio_lock: float=0.0, scale_factor: float=1.0) -> List[TrackFrame]:
+                                 ratio_lock: float = 0.0, scale_factor: float = 1.0) -> List[TrackFrame]:
         """ Convert from TrackingRegions to a list of Tracklets. """
         track_frames = []
         for region in regions:
@@ -353,4 +357,3 @@ class Tracker:
     def tracklet_count(self):
         """ Returns the number of currently active tracklets. """
         return len(self.tracklets)
-
