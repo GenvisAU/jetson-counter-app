@@ -119,3 +119,9 @@ Jetson should come with a default image for cuda, cudnn and python. OpenCV, Tens
 - Run `python3 OpenCV_test/webcam_test.py ` to test using web camera on Jetson
 - Run `python3 OpenCV_test/Jetsoncam_test.py` to test using Jetson onboard camera
 
+#### Using Jetson Image
+1. Follow JetPack Installation to install JetPack3.3 on the host PC
+2. Use `flash.sh` to replace the `flash.sh` file in `/64_TX2/Linux_for_Tegra` folder
+3. Cd into the directory containing the L4T installation package on the host PC
+4. Copy `system.img` into `/64_TX2/Linux_for_Tegra/bootloader`
+5. `sudo bash flash.sh -r -k APP jetson-tx2 mmcblk0p1` 
