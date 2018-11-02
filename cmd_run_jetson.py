@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 """
-<Description>
+Use this script to continously run the counter app.
 """
 
+import argparse
 from tools.logger import Logger
 from counter.counter import Counter
 
@@ -15,13 +16,21 @@ __email__ = "krinj@genvis.co"
 __version__ = "0.0.1"
 
 
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-v', '--visualize', action="store_true", help="Whether or not to visualize the results.")
+    return parser.parse_args()
+
+
+args = get_args()
+visualize = args.visualize
+
+
 if __name__ == "__main__":
-    print("Running Counter App")
     Logger.field("Running", "Counter App")
-    counter = Counter()
+    counter = Counter(visualize)
     counter.process("/dev/video1")
-    # counter.process('/media/haoxue/WD/wt-engine/input/small_london.mp4')
-    # counter.write_output()
+
 
 
 

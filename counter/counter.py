@@ -15,7 +15,7 @@ from counter.detector import Detector
 from counter.video_reader import VideoReader
 import cv2
 import time
-from datetime import date, datetime
+from datetime import datetime
 import numpy as np
 
 __author__ = "Jakrin Juangbhanich"
@@ -42,11 +42,6 @@ class Counter:
         self.load_settings()
         Session.ROLLING_WINDOW_SIZE = self.rolling_window_size
         Session.SESSION_ACTIVATION_SEC = self.session_activation_sec
-
-        # Create the output path for the counter.
-        self.output_path = str(date.today())
-        if not os.path.exists(os.path.join(os.getcwd(), self.output_path)):
-            os.mkdir(os.path.join(os.getcwd(), self.output_path))
 
         # Initialize stateful variables.
         self.session = None

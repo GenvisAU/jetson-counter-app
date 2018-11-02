@@ -119,3 +119,21 @@ Jetson should come with a default image for cuda, cudnn and python. OpenCV, Tens
 - Run `python3 OpenCV_test/webcam_test.py ` to test using web camera on Jetson
 - Run `python3 OpenCV_test/Jetsoncam_test.py` to test using Jetson onboard camera
 
+#### Using Jetson Image
+1. Follow JetPack Installation to install JetPack3.3 on the host PC
+2. Use `flash.sh` to replace the `flash.sh` file in `/64_TX2/Linux_for_Tegra` folder
+3. Cd into the directory containing the L4T installation package on the host PC
+4. Copy `system.img` into `/64_TX2/Linux_for_Tegra/bootloader`
+5. Place TX2 into FORCE USB Recovery Mode
+6. `sudo bash flash.sh -r -k APP jetson-tx2 mmcblk0p1` 
+
+
+#### To place system in FORCE USB Recovery Mode
+1. Power down the device. If connected, remove the AC adapter from the device. The device must be powered OFF, and not in a suspend or sleep state.
+2. Connect the Micro-B plug on the USB cable to the Recovery (USB Micro-B) Port on the device and the other end to an available USB port on the host PC.
+3. Connect the power adapter to the device.
+4. With the system powered on:
+   - Press and hold the RECOVERY FORCE button.
+   - While depressing the RECOVERY FORCE button, press and release the RESET button.
+   - Wait 2 seconds and release the RECOVERY FORCE button.
+

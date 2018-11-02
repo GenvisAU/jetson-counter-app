@@ -45,8 +45,6 @@ class Session:
         if not self.is_active:
             return
 
-        self._execute_rolling_window(self.ROLLING_WINDOW_SIZE)
-
         session_id = self.get_session_id()
         data = {
             "session_id": session_id,
@@ -64,6 +62,8 @@ class Session:
         pather.create(self.OUTPUT_DIR)
         with open(file_path, "w") as f:
             json.dump(data, f, indent=2)
+
+        self._execute_rolling_window(self.ROLLING_WINDOW_SIZE)
 
         return data
 
