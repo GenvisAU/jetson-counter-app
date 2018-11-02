@@ -8,3 +8,7 @@
 resource/
 
 output/
+
+models/
+
+session_index\.txt

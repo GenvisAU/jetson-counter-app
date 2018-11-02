@@ -7,6 +7,7 @@
 import os
 import yaml
 from counter.session import Session
+from counter.vector_extractor import VectorExtractor
 from tools import visual
 from tools.logger import Logger
 from tools.resource_manager import ResourceManager
@@ -30,6 +31,7 @@ class Counter:
         self.detector = Detector()
         self.load_resources(resource_directory)
         self.video_reader = VideoReader()
+        self.extractor = VectorExtractor()
         self.visualize = visualize if "DISPLAY" in os.environ else False
 
         # Initialize the app settings.
