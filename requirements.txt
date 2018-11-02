@@ -3,3 +3,4 @@ opencv-python
 numpy
 pyyaml
 dlib==19.16.0
+pillow

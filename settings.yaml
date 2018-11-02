@@ -1,4 +1,5 @@
-MIN_FACE_SIZE: 100  # Minimum size for a face detection in pixels, to trigger a session.
-SESSION_TIMEOUT_SEC: 1  # Maximum time with no faces detected for the session to end.
-SESSION_ACTIVATION_SEC: 2  # Minimum time in front of camera for the session to activate.
+MIN_FACE_SIZE: 80  # Minimum size for a face detection in pixels, to trigger a session.
 ROLLING_WINDOW_SIZE: 10000  # Maximum number of session data to store on disk before rolling deletion.
+MAX_VECTOR_LENGTH: 10  # How many face detections to keep in one session (cyclic).
+SESSION_LONG_LIFE_FRAMES: 150  # How many frames to keep a session open before (without detections) before ending it.
+SESSION_SHORT_LIFE_FRAMES: 3  # How many frames to keep a session waiting for full activation (clustered MAX_VECTOR_LENGTH faces).
