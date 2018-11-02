@@ -26,17 +26,22 @@ class VectorExtractor:
         self.pose_predictor_5_point = dlib.shape_predictor(predictor_5_point_model)
         self.face_encoder = dlib.face_recognition_model_v1(face_recognition_model)
 
-    def process(self, sample):
+    def process(self, image, regions):
         """ Takes in an image, and a face-region for that image and finds the feature vector.
 
         Returns:
             np.array: The 128 byte feature vector if successful, otherwise None.
         """
-        vector = self._face_encodings(sample.image, None)
+        rects = [self.region_to_rect(r) for r in regions]
+        vector = self._face_encodings(image, rects)
         if len(vector) > 0:
             return vector[0]
         else:
             return None
+
+    @staticmethod
+    def region_to_rect(region):
+        return (region.left, region.right, region.top, region.bottom)
 
     def face_landmarks(self, face_image, face_locations=None):
         """ Get the raw face landmarks for the image."""

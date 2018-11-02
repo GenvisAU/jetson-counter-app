@@ -77,9 +77,6 @@ class Detector:
                 )
                 regions.append(face_region)
 
-        for r in regions:
-            r.expand_to_ratio(1)
-
         return regions
 
     def load_model(self, path_to_model):
