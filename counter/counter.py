@@ -6,6 +6,7 @@
 
 import os
 import random
+import uuid
 
 import yaml
 
@@ -25,6 +26,12 @@ import numpy as np
 __author__ = "Jakrin Juangbhanich"
 __copyright__ = "Copyright 2018, GenVis Pty Ltd."
 __email__ = "krinj@genvis.co"
+
+
+class VectorWrapper:
+    def __init__(self, vector):
+        self.value = vector
+        self.id = uuid.uuid4()
 
 
 class SessionVectorPair:
@@ -77,25 +84,8 @@ class Counter:
         model_path = resource_manager.get("ssd_model")
         self.detector.load_model(model_path)
 
-    # def start_session(self):
-    #     self.session = Session()
-    #     Logger.field("Session Started", datetime.now().ctime())
-    #
-    # def end_session(self):
-    #     self.session.end()
-    #     Logger.field("Session Ended", datetime.now().ctime())
-    #     self.session = None
-
     def visualize_regions(self, frame, valid_regions, invalid_regions):
         """ Draw the visualization window for testing. """
-
-        # Draw the recording indicator for the session. Green = active, Red = inactive.
-        # cv2.rectangle(frame, (3, 3), (37, 37), (0, 0, 0), thickness=-1)
-        # if self.session is not None:
-        #     recording_color = (0, 255, 50) if self.session.is_active else (0, 180, 255)
-        # else:
-        #     recording_color = (0, 50, 255)
-        # cv2.rectangle(frame, (5, 5), (35, 35), recording_color, thickness=-1)
 
         cap_regions = []
         for r in invalid_regions:
@@ -126,34 +116,24 @@ class Counter:
                 regions = self.detector.detect(frame)
                 valid_regions = [r for r in regions if r.width >= self.min_face_size]
                 invalid_regions = [r for r in regions if r.width < self.min_face_size]
-                n_faces = len(valid_regions)
 
                 vectors = [self.get_vector(frame, r) for r in valid_regions]
+                vectors = [v for v in vectors if v is not None]
+
                 self.add_vectors_to_sessions(vectors)
                 self.process_sessions()
-
-
-                # if n_faces > 0:
-                #     self.timestamp_previous_activity = time.time()
-                #     if self.session is None:
-                #         self.start_session()
-                #     else:
-                #         self.session.register_number_of_faces(n_faces)
-
                 self.visualize_regions(frame, valid_regions, invalid_regions)
-
-                # if self.session is not None:
-                #     if time.time() - self.timestamp_previous_activity > self.session_timeout_sec:
-                #         self.end_session()
 
     def add_vectors_to_sessions(self, vectors):
 
         pairs = []
-        for v in vectors:
+        vector_wrappers = [VectorWrapper(v) for v in vectors]
+        for v in vector_wrappers:
             for s in self.sessions:
-                d = self.get_session_vector_distance(s, v)
+                d = s.get_distance(v.value)
                 if d < 0.5:  # Within Range!
-                    pair = SessionVectorPair(s, v, self.get_session_vector_distance(s, v))
+                    pair = SessionVectorPair(s, v, d)
+                    pairs.append(pair)
 
         paired_sessions = {}
         paired_vectors = {}
@@ -161,24 +141,25 @@ class Counter:
 
         # Merge the similar IDs.
         for p in pairs:
-            if p.vector not in paired_vectors and p.session not in paired_sessions:
+            if p.vector.id not in paired_vectors and p.session not in paired_sessions:
                 paired_sessions[p.session] = True
-                paired_vectors[p.vector] = True
-                # Fuse the pairs.
+                paired_vectors[p.vector.id] = True
+                p.session.add_vector(p.vector.value)
 
         # Create New Sessions.
-        for v in vectors:
-            if v not in paired_vectors:
-                pass
+        for v in vector_wrappers:
+            if v.id not in paired_vectors:
+                session = Session()
+                session.add_vector(v.value)
+                self.sessions.append(session)
+
+        print("Sessions", len(self.sessions))
 
     def process_sessions(self):
         pass
 
     def get_vector(self, image, region):
         vector = self.extractor.process(image, [region])
-        print(vector)
+        return vector
 
-    def get_session_vector_distance(self, session, vector):
-        d = random()
-        return d
 

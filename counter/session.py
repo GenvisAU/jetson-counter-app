@@ -7,6 +7,9 @@
 import json
 import os
 import time
+
+import numpy as np
+
 from tools import pather
 
 __author__ = "Jakrin Juangbhanich"
@@ -21,15 +24,26 @@ class Session:
     Z_FILL_INDEX = 7
     ROLLING_WINDOW_SIZE = 10000  # This is how many session files we will keep.
     SESSION_ACTIVATION_SEC = 0  # How many seconds before a session is counted as active.
+    MAX_VECTOR_LENGTH = 10
 
     def __init__(self):
-        self.max_number_faces = 0
+        self.session_id = self.get_session_id()
+        self.face_id = "unknown"
         self.timestamp_start = time.time()
         self.timestamp_end = 0
+        self.vectors = []
 
-    def register_number_of_faces(self, number_of_faces):
-        """ Compare the current number of faces value and register it to. """
-        self.max_number_faces = max(number_of_faces, self.max_number_faces)
+    def add_vector(self, vector):
+        self.vectors.append(vector)
+        if len(self.vectors) > self.MAX_VECTOR_LENGTH:
+            self.vectors.pop(0)
+
+    def get_distance(self, vector):
+        distance_total = 0
+        for v in self.vectors:
+            distance_total += np.linalg.norm(v - vector)
+        distance_total /= len(self.vectors)
+        return distance_total
 
     def end(self):
         """ End the session and write the results to a file. """
@@ -45,27 +59,29 @@ class Session:
         if not self.is_active:
             return
 
-        session_id = self.get_session_id()
         data = {
-            "session_id": session_id,
+            "session_id": self.session_id,
+            "face_id": self.face_id,
             "timestamp_start": self.timestamp_start,
             "timestamp_end": self.timestamp_end,
             "duration_in_seconds": self.timestamp_end - self.timestamp_start,
-            "max_faces": self.max_number_faces,
             "date": self._get_readable_date(time.localtime()),
             "readable_time_end": self._get_readable_time(time.localtime())
         }
 
         # Write the results data to disk.
-        file_name = "session_{}.json".format(str(session_id).zfill(self.Z_FILL_INDEX))
+        file_name = "session_{}.json".format(str(self.session_id).zfill(self.Z_FILL_INDEX))
         file_path = os.path.join(self.OUTPUT_DIR, file_name)
         pather.create(self.OUTPUT_DIR)
         with open(file_path, "w") as f:
             json.dump(data, f, indent=2)
 
         self._execute_rolling_window(self.ROLLING_WINDOW_SIZE)
-
         return data
+
+    # ======================================================================================================================
+    # Private file I/O Support functions.
+    # ======================================================================================================================
 
     def _execute_rolling_window(self, rolling_window_size=5):
         """ Clean up the directory to fit within the rolling window size. """
