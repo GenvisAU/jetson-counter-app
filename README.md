@@ -1,6 +1,6 @@
 # Jetson Counter App
 
-This counter app is a Python app designed to run on the Jetson (or any Ubuntu based OS). When on, it will read the video stream from a USB camera and detect faces in real time. If a face is detected, and it is close enough to the camera, a session will begin. When the face is no longer detected, the session will end, and a log of the session will be written to disk as a json file.
+This counter app is a Python app designed to run on the Jetson (or any Ubuntu based OS). When on, it will read the video stream from a USB camera and detect faces in real time. If a face is detected, and it is close enough to the camera, a session will begin for that face. When that face is no longer detected, the session will end, and a log of the session will be written to disk as a json file.
 
 ## Quick Start
 
@@ -18,21 +18,38 @@ python cmd_run_counter.py -v
 
 The app will automatically download the Tensorflow model required for face detection, and should run whilst showing the results in a window.
 
+## How It Works
+
+* In real time (every frame) the counter app detects all faces from the camera.
+* Each face is matched against a (short) history of observed faces. It will create a new *session* for each unique face.
+* When a unique face disappears from view for a certain number of seconds, that session ends and is written to a JSON file.
+
+Intuitively, each *individual* face will trigger a new session. Sessions will run concurrently (and so they can overlap). Whether a face belongs to a certain session or should spin up a new one depends on the *embedding distance* produced for each face.
+
 ## Visualization
 
-If visualization is enabled, the app will open a live video feed to show what it is seeing.
+If visualization is enabled, the app will open a live video feed to show what it is seeing. Here is what it looks like if there is a face detefcted, and a session is created. Each *active session* is listed in the top left corner in green. It should correspond with a bounding box in the video.
 
-A green bounding box will be shown around a detected face. There is a square indicator on the top left corner of the screen showing the status of the app.
+![counter_single](images/counter_single.png)
 
-**Green**: Session is active.
-**Red**: Session is inactive.
-**Yellow**: A face is detected, but not long enough for a session to start yet.
+If a second face is detected, it will create a new session based on that face as well. These two sessions will run (start and end) independently of each other. There is no technical limit on the number of sessions that can be active simultaneously, but the physical and temporal constraints of  people being in front of the camera will probably serve as our limiting mechanism.
 
-![pic_green](images/pic_green.png)
+![counter_dual](images/counter_dual.png)
 
-If a face is detected, but it is too far away from the camera (i.e. the bounding size is too small) it will be highlighted in red. A thin, white box around the red will show the size that the face needs to be for the detection to be big enough.
+When a tagged face is no detected by the camera, it is either:
 
-![pic_red](images/pic_red.png)
+* Too far from the camera (will be highlighted in red).
+* Too close to the edge (will be highlighted in red).
+* Not detected in the image at all.
+
+This will cause the face's matching session to decay. The decay is represented by a white line under the session tag, slowly receding. Once a session as decayed completely, we will assume that person has left. The session will then be serialized into a JSON file, and will be cleared from the app. 
+
+* If that person comes back AFTER their session has ended, it will create a completely new session.
+* If that person disappears and comes back BEFORE the session's countdown timer expires, the session will not end, and will be restored to full duration.
+
+![counter_fade](images/counter_fade.png)
+
+
 
 ## Output
 
@@ -42,13 +59,14 @@ Here is a sample of what the session data file will look like.
 
 ```json
 {
-  "timestamp_start": 1537249876.6961884,
-  "duration_in_seconds": 5.573455572128296,
-  "max_faces": 1,
-  "date": "18/9/2018",
-  "timestamp_end": 1537249882.269644,
-  "session_id": 32,
-  "readable_time_end": "13:51"
+  "readable_time_end": "15:12",
+  "readable_time_start": "15:11",
+  "timestamp_start": 1541142684,
+  "session_id": 113,
+  "face_id": "bc8a28b9aed645d6ba86ee25fc594b9c",
+  "date": "02/11/2018",
+  "timestamp_end": 1541142720,
+  "duration_in_seconds": 35.68
 }
 ```
 
@@ -60,12 +78,13 @@ It contains keys and values about when the session was started (UNIX timestamp),
 
 The settings for the app can be configured in the `settings.yaml` file.
 
-| Setting Name           | Description                                                  | Default Value |
-| ---------------------- | ------------------------------------------------------------ | ------------- |
-| MIN_FACE_SIZE          | This is the minimum size (in pixels) for a detected face to be considered as a valid detection for a session. | 100           |
-| SESSION_TIMEOUT_SEC    | If no valid faces are detected for this duration (in seconds), the currently active session will end. | 1             |
-| SESSION_ACTIVATION_SEC | If a session has just begun, it must remain active for this many seconds before it is considered a 'real' session. This is to prevent short, accidental sessions. | 2             |
-| ROLLING_WINDOW_SIZE    | This is how many session records we will persist on disk, before deleting them. If the number of files exceed this amount, we will delete the oldest (earliest) sessions first. | 10000         |
+| Setting Name              | Description                                                  | Default Value |
+| ------------------------- | ------------------------------------------------------------ | ------------- |
+| MIN_FACE_SIZE             | This is the minimum size (in pixels) for a detected face to be considered as a valid detection for a session. | 80            |
+| MAX_VECTOR_LENGTH         | How many face detections to keep in one session (cyclic). This is only used for the purposes of embedding comparison. The greater this number, the more accurate the facial matching, but the slower the app will run. | 10            |
+| SESSION_LONG_LIFE_FRAMES  | How many frames to keep a session open before (without detections) before ending it. Typically, a camera runs at 30 FPS, so 150 frames is around 5 seconds. Essentially, this is the session countdown timer before it ends. | 150           |
+| SESSION_SHORT_LIFE_FRAMES | This is the countdown timer for a session that has been picked up, but has not received enough facial samples to reach full confidence. Increasing this number can help to reduce false positive sessions. | 3             |
+| ROLLING_WINDOW_SIZE       | This is how many session records we will persist on disk, before deleting them. If the number of files exceed this amount, we will delete the oldest (earliest) sessions first. | 10000         |
 
 ## Requirements
 
@@ -85,6 +104,7 @@ Jetson should come with a default image for cuda, cudnn and python. OpenCV, Tens
 | numpy          | 1.14.5  |
 | opencv-python  | 3.4.3   |
 | pyyaml         | 3.13    |
+| dlib           | 19.16.0 |
 
 ## Jetson Setup Instructions
 
@@ -100,8 +120,6 @@ Jetson should come with a default image for cuda, cudnn and python. OpenCV, Tens
    - make sure the Jetson is powered
 6. Continue clicking *Next* until *Installation Complete*
 7. During Installation, if the warinings about time occurs, please use ssh to change the time on Jetson. Use the command `sudo date --set="2018-09-16 00:00:00"`
-
-
 
 #### Install Tensorflow on Jetson
 
